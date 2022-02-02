@@ -1,0 +1,24 @@
+ {
+   "title": "This is an example embed",
+   "description": "This is a test embed to showcase what embeds look like and how they work.",
+   "url": "https://github.com/dehys/SimpleEmbed",
+   "color": 15158332,
+   "author": {
+     "name": "Dehys",
+     "url": "https://github.com/dehys/SimpleEmbed",
+     "icon_url": "https://avatars.githubusercontent.com/u/23004445?v=4.png"
+   },
+   "fields": [
+     {
+       "name": "This is a field",
+       "value": "This is the value of the field."
+     },
+     {
+       "name": "This is another field",
+       "value": "This is the value of the field.",
+       "inline": true
+     }
+   ],
+   "image": "https://picsum.photos/200/200",
+   "thumbnail": "https://picsum.photos/200/200"
+ }
