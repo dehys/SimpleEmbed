@@ -50,29 +50,30 @@ The above json example will output the following embed:</br>
 
 ## Example usage
 ### *Main.class*
+
 ```java
-import com.dehys.simpleembed.SimpleEmbed;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.requests.GatewayIntent;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException, LoginException {
-        
+
         // Create a new JDA instance with the token of your bot
         JDA jda = JDABuilder.createDefault(args[0]).build();
         // Register the listener with the JDA instance
         jda.addEventListener(new ExampleListener());
 
         // Initialize SimpleEmbed
-        SimpleEmbed.init(); 
+        SimpleEmbedOld.init();
     }
 }
 ```
 
 ### *ExampleListener.class*
+
 ```java
-import com.dehys.simpleembed.SimpleEmbed;
+
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -80,14 +81,14 @@ public class ExampleListener extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getMessage().getContentRaw().startsWith("!")) {
-            
+
             // Get the embed from the json file
-            EmbedBuilder embed = SimpleEmbed.get("example.json");
+            EmbedBuilder embed = SimpleEmbedOld.get("example.json");
             if (embed != null) {
                 // Send the embed to the channel
                 event.getChannel().sendMessage(embed.build()).queue();
             }
-            
+
         }
     }
 }
