@@ -1,23 +1,87 @@
-# SimpleEmbed
+<br>
+<br>
+<div align="center" id="top"> 
+  <img src="https://i.imgur.com/GD3Huxq.png" width="800px" alt="<h1>SimpleEmbed</h1>" />
+</div>
+<p align="center">
+  <a href="https://discord.gg/DdnayChh4g"><img alt="Discord" src="https://img.shields.io/discord/435431724831211522?color=%237289DA&label=%20%E2%80%8E%20%E2%80%8E%20%E2%80%8EDiscord%20%E2%80%8E&logo=Discord&logoColor=%237289DA&style=flat-square"></a>
+  <a href="https://github.com/devflask/StatisticsLib/releases"><img alt="Releases" src="https://img.shields.io/github/v/release/dehys/SimpleEmbed?color=%2354f95f&label=Latest%20Release&logo=GitHub&logoColor=%2354f95f&style=flat-square"></a>
+  <a href="https://en.wikipedia.org/wiki/MIT_License"><img alt="Discord" src="https://img.shields.io/github/license/devflask/StatisticsLib?color=%23f9a154&label=License&style=flat-square"></a>
+</p>
+<p align="center">
+  <a href="https://github.com/dehys/SimpleEmbed/#implementation">Implementation</a> &#xa0; | &#xa0;
+  <a href="https://github.com/dehys/SimpleEmbed/#dependencies">Dependencies</a> &#xa0; | &#xa0;
+  <a href="https://github.com/dehys/SimpleEmbed/#getting-started">Getting Started</a> &#xa0; | &#xa0;
+  <a href="https://github.com/dehys/SimpleEmbed/#json-example">Json Example</a> &#xa0; | &#xa0;
+  <a href="https://github.com/dehys/SimpleEmbed/#license">License</a> &#xa0;
+</p>
 
-This is a utility library to convert json files to EmbedBuilder objects from JDA.
-The entire application is contained within the `SimpleEmbed` class.
-`embeds/` is the directory where the json files are stored, you can delete and override them whenever you want.
-It uses `Lombok`, `Gson` and `JDA` as dependencies.
+## Implementation ##
+<br>
+<h5>Install</h5>
+Let's install the library so we can use it. First we clone the repository and then build it with maven
 
-## Install
+```
+$ git clone https://github.com/dehys/SimpleEmbed.git && cd SimpleEmbed
+$ mvn clean install
+```
+<br>
 
-    $ git clone https://github.com/dehys/SimpleEmbed.git && cd SimpleEmbed
-    $ mvn clean install
+<h5>Configure</h5>
+Now lets configure our pom.xml, so we can actually use the library
 
-## Methods
-`SimpleEmbed.init()` - Initializes the library. Creates the embeds directory if it doesn't exist and loads all the json files.</br>
-`SimpleEmbed.get(String)` - Tries to load an EmbedBuilder object from the specified String, returns null if json file was not found.</br>
-`SimpleEmbed.getFiles()` - Returns a list of all the json files loaded by SimpleEmbed.</br>
-`SimpleEmbed.create(List<Message.Attachment>)` - Creates an EmbedBuilder object from a list of Message.Attachment objects.</br>
-`SimpleEmbed.delete(String)` - Deletes the specified json file.</br>
+```xml
+<dependencies>
+  <dependency>
+    <groupId>com.dehys</groupId>
+    <artifactId>SimpleEmbed</artifactId>
+    <version>VERSION</version>
+    <scope>compile</scope>
+  </dependency>
+</dependencies>
+```
+<br>
 
-## Json
+## Dependencies ##
+- [JDA version 5 or newer](https://github.com/DV8FromTheWorld/JDA/releases)
+<br>
+
+## Getting Started ##
+Quick links: [Kotlin Example](https://github.com/dehys/SimpleEmbed/blob/36ea2729ba64d2b9d0599deccfb535e6ecfcc872/src/main/java/com/dehys/simpleembed/examples/KotlinExample.kt#L13) | [Java Example](https://github.com/dehys/SimpleEmbed/blob/36ea2729ba64d2b9d0599deccfb535e6ecfcc872/src/main/java/com/dehys/simpleembed/examples/JavaExample.java#L15)
+
+In this example we will send a message to a discord channel with an attachment of a json file.<br>
+SimpleEmbed will take the file and try to convert it to a EmbedBuilder object which we can<br>
+then use to reply in the same channel. Let's start in the **Bot** class:<br>
+```kotlin
+var simpleEmbed: SimpleEmbed? = null
+
+init {
+    jda.addEventListener(ExampleListener(this)) // Add the listener to the JDA instance
+    simpleEmbed = SimpleEmbed(jda) // Create a new SimpleEmbed instance, optionally passing a JDA instance
+}
+```
+We can optionally pass an instance of the JDA object. If we do, SimpleEmbed is going to add some useful<br>
+slash commands, for example: `/se_embeds` to list all the embeds in the channel, `/se_files` to list all the files stored,<br>
+and `/se_dir` to see the working directory of SimpleEmbed.
+
+Now lets see what the **ExampleListener** class looks like:
+```kotlin
+override fun onMessageReceived(event: MessageReceivedEvent) {
+    if (event.author.isBot) return
+    if (event.message.attachments.isEmpty()) return
+
+    // Get all embeds from the message as a list of EmbedBuilder, then map them to a list of MessageEmbed by calling build() on each one.
+    val embeds = bot.simpleEmbed?.getEmbeds(event.message.attachments)?.map { it.build() } ?: emptyList()
+
+    // Send the embeds to the channel the message was sent in.
+    embeds.forEach { event.channel.sendMessageEmbeds(it).queue() }
+}
+```
+The above example show's you how to use SimpleEmbed in Kotlin, but If you want to use it in java, you can check out all the examples [here](https://github.com/dehys/SimpleEmbed/tree/main/src/main/java/com/dehys/simpleembed/examples)
+<br>
+
+## Json Example ##
+This is an example of a valid json file.
 ```json
  {
    "title": "This is an example embed",
@@ -41,66 +105,15 @@ It uses `Lombok`, `Gson` and `JDA` as dependencies.
      }
    ],
    "image": "https://picsum.photos/200/200",
-   "thumbnail": "https://picsum.photos/200/200"
+   "thumbnail": "https://picsum.photos/200/200",
+   "footer": {
+     "text": "This is the footer text.",
+     "icon_url": "https://picsum.photos/200/200"
+   }
  }
 ```
+<br>
 
-The above json example will output the following embed:</br>
-<img src="https://i.imgur.com/CR3SnRZ.png" width="800px">
-
-## Example usage
-### *Main.class*
-
-```java
-
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
-
-public class Main {
-    public static void main(String[] args) throws InterruptedException, LoginException {
-
-        // Create a new JDA instance with the token of your bot
-        JDA jda = JDABuilder.createDefault(args[0]).build();
-        // Register the listener with the JDA instance
-        jda.addEventListener(new ExampleListener());
-
-        // Initialize SimpleEmbed
-        SimpleEmbedOld.init();
-    }
-}
-```
-
-### *ExampleListener.class*
-
-```java
-
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-
-public class ExampleListener extends ListenerAdapter {
-    @Override
-    public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.getMessage().getContentRaw().startsWith("!")) {
-
-            // Get the embed from the json file
-            EmbedBuilder embed = SimpleEmbedOld.get("example.json");
-            if (embed != null) {
-                // Send the embed to the channel
-                event.getChannel().sendMessage(embed.build()).queue();
-            }
-
-        }
-    }
-}
-```
-
-## License 
+## License ##
 This project is licensed under the MIT license.</br>
-More information can be found in the LICENSE file.
-</br>
-</br>
-</br>
-</br>
-Made with ❤ by [dehys](https://github.com/dehys) </br>
-Join the discord server for support: https://discord.gg/SxwUsgk </br>
-
+More information can be found in the [LICENSE](https://github.com/dehys/SimpleEmbed/blob/main/LICENSE) file.
