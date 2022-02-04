@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import java.io.File
 
+@Suppress("unused")
 class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
 
     private val files = mutableListOf<File>()
@@ -33,14 +34,19 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
 
         files.forEach(::println)
 
-        jda?.let { jd_a ->
-            jd_a.addEventListener(this)
-            jd_a.awaitReady()
-            jd_a.guilds.onEach { it.updateCommands().addCommands(commandData).complete() }
-            println("initialized SimpleEmbed with jda")
+        jda?.let {
+            jda.addEventListener(this)
+            jda.awaitReady()
+            jda.guilds.onEach { it.updateCommands().addCommands(commandData).complete() }
         }
     }
 
+    /*
+    *TODO:
+    *   Get json files from resource folder instead of working directory.
+    *   In production, the files wont exist in the working directory but
+    *   will be in the resources folder as they are compiled.
+    */
     override fun onSlashCommand(event: SlashCommandEvent) {
         when (event.name) {
             "se_embeds" -> getEmbed("embeds.json")?.let { event.replyEmbeds(it.build()).complete() }
@@ -53,7 +59,6 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
         return files
     }
 
-    //get file by name from files
     private fun getFile(name: String): File {
         for(file in files){
             if(file.name == name){
@@ -63,12 +68,10 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
         return File("")
     }
 
-    //add file to files
     private fun addFile(file: File) {
         files.add(file)
     }
 
-    //delete file by name from files
     private fun deleteFile(name: String): Boolean {
         for(file in files){
             if(file.name == name){
@@ -83,7 +86,6 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
         return Gson().fromJson(file.readText(), RawEmbed::class.java).build()
     }
 
-    //get embed from Message Attachments
     fun getEmbed(message: Message): EmbedBuilder? {
         if(message.attachments.isEmpty() || message.author.isBot || message.author.isSystem) return null
 
@@ -108,7 +110,6 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
         return null
     }
 
-    //get embed from files by file name
     fun getEmbed(name: String): EmbedBuilder? {
         val file = getFile(name)
         if(file.exists() && file.isFile && file.extension == "json"){
@@ -117,12 +118,17 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
         return null
     }
 
-    //delete embed from files by file name
+    fun getEmbed(file: File): EmbedBuilder? {
+        if(file.exists() && file.isFile && file.extension == "json"){
+            return generateEmbed(file)
+        }
+        return null
+    }
+
     fun deleteEmbed(name: String): Boolean {
         return deleteFile(name)
     }
 
-    //get all embeds from files as String array of file names
     fun getAllEmbeds(): Array<String> {
         val embeds = mutableListOf<String>()
         for(file in files){
@@ -130,5 +136,45 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
         }
         return embeds.toTypedArray()
     }
+
+    //WARNING: This makes the type classes of SimpleEmbed public
+    /*fun convertToRaw(embedBuilder: EmbedBuilder) : RawEmbed {
+        val me = embedBuilder.build()
+
+        val author = Author().also {
+            it.name = me.author?.name
+            it.url = me.author?.url
+            it.iconUrl = me.author?.iconUrl
+        }
+
+        val fields = mutableListOf<com.dehys.simpleembed.types.Field>().also {
+            me.fields.forEach { field ->
+                it.add(com.dehys.simpleembed.types.Field(field.name, field.value, field.isInline))
+            }
+        }
+
+        val footer = Footer().also {
+            it.text = me.footer?.text
+            it.iconUrl = me.footer?.iconUrl
+        }
+
+        var timestamp: String? = null
+        if (me.timestamp != null && me.timestamp.toString() != "null") {
+            timestamp = me.timestamp.toString()
+        }
+
+        return RawEmbed(
+            title = me.title,
+            url = me.url,
+            description = me.description,
+            timestamp = timestamp,
+            color = me.colorRaw,
+            author = author,
+            fieldList = fields,
+            imageUrl = me.image?.url,
+            thumbnailUrl = me.thumbnail?.url,
+            footer = footer
+        )
+    }*/
 
 }
