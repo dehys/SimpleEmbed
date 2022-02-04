@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import java.awt.Color
 import java.io.File
 
 @Suppress("unused")
@@ -86,28 +87,30 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
         return Gson().fromJson(file.readText(), RawEmbed::class.java).build()
     }
 
-    fun getEmbed(message: Message): EmbedBuilder? {
-        if(message.attachments.isEmpty() || message.author.isBot || message.author.isSystem) return null
+    //Get embed from Message.Attachment
+    fun getEmbed(attachment: Message.Attachment): EmbedBuilder {
+        if(
+            attachment.isImage ||
+            attachment.isVideo ||
+            attachment.fileExtension == null ||
+            !attachment.fileExtension.equals("json", true)
+        ) return EmbedBuilder().error("Invalid file type")
 
-        for (atc in message.attachments) {
-            if(
-                atc.isImage ||
-                atc.isVideo ||
-                atc.fileExtension == null ||
-                !atc.fileExtension.equals("json", true)
-            ) return null
+        val dwFile = attachment.downloadToFile(workingDir+ File.separator +attachment.fileName).get()
+        files.add(dwFile)
+        return generateEmbed(dwFile)
+    }
 
-
-            return if(getFile(atc.fileName).exists()) {
-                generateEmbed(getFile(atc.fileName))
-            } else {
-                val file = atc.downloadToFile(workingDir+"/embeds/"+atc.fileName).get()
-                files.add(file)
-                return generateEmbed(file)
-            }
+    fun getEmbeds(attachments: List<Message.Attachment>): List<EmbedBuilder> {
+        val embeds = mutableListOf<EmbedBuilder>()
+        attachments.forEach {
+            embeds.add(getEmbed(it))
         }
+        return embeds
+    }
 
-        return null
+    fun getEmbeds(message: Message): List<EmbedBuilder> {
+        return getEmbeds(message.attachments)
     }
 
     fun getEmbed(name: String): EmbedBuilder? {
@@ -176,5 +179,12 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
             footer = footer
         )
     }*/
+
+    fun EmbedBuilder.error(error: String): EmbedBuilder {
+        this.setColor(Color.RED)
+        this.setTitle("SimpleEmbed")
+        this.setDescription("**ERROR**: `$error`")
+        return this
+    }
 
 }
