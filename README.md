@@ -17,8 +17,6 @@
 </p>
 
 ## Implementation ##
-<br>
-<h5>Install</h5>
 Let's install the library so we can use it. First we clone the repository and then build it with maven
 
 ```
@@ -26,9 +24,7 @@ $ git clone https://github.com/dehys/SimpleEmbed.git && cd SimpleEmbed
 $ mvn clean install
 ```
 <br>
-
-<h5>Configure</h5>
-Now lets configure our pom.xml, so we can actually use the library
+Now lets configure our pom.xml (Maven), so we can actually use the library
 
 ```xml
 <dependencies>
