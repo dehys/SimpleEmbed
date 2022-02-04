@@ -4,51 +4,35 @@ import com.google.gson.annotations.SerializedName
 import net.dv8tion.jda.api.EmbedBuilder
 import java.time.Instant
 
-internal class RawEmbed(embed: EmbedBuilder?) {
-
-    private var embed: EmbedBuilder = EmbedBuilder()
-
-    private var title: String? = null
-    private var url: String? = null
-    private var description: String? = null
-    private var timestamp: String? = null
-    private var color: Int? = null
-    private var author: Author? = null
-    private var fields: List<Field>? = null
+internal data class RawEmbed(
+    var title: String? = null,
+    var url: String? = null,
+    var description: String? = null,
+    var timestamp: String? = null,
+    var color: Int? = null,
+    var author: Author? = null,
+    @SerializedName(value = "fields", alternate = ["fieldList", "fieldArray"])
+    var fieldList: List<Field>? = null,
     @SerializedName(value = "image_url", alternate = ["image", "imageUrl"])
-    private var imageUrl: String? = null
+    var imageUrl: String? = null,
     @SerializedName(value = "thumbnail_url", alternate = ["thumbnail", "thumbnailUrl"])
-    private var thumbnailUrl: String? = null
-    private var footer: Footer? = null
-
-    init {
-        if (embed != null) {
-            this.embed = embed
-            TODO("Not yet implemented, convert EmbedBuilder to RawEmbed")
-        }
-    }
+    var thumbnailUrl: String? = null,
+    var footer: Footer? = null
+) {
 
     fun build() : EmbedBuilder {
-        //check if variables are null and if not set them with embed
-        if (title != null && url != null) embed.setTitle(title, url) else if (title != null) embed.setTitle(title) //Title and title url
-        if (description != null) embed.setDescription(description) //Description
-        if (timestamp != null) embed.setTimestamp(Instant.parse(timestamp)) //Timestamp
-        if (color != null) embed.setColor(color!!) //Color
-        if (imageUrl != null) embed.setImage(imageUrl) //Image
-        if (thumbnailUrl != null) embed.setThumbnail(thumbnailUrl) //Thumbnail
-
-        if (author != null) {
-            if (author!!.name != null && author!!.url != null && author!!.iconUrl != null) embed.setAuthor(author!!.name, author!!.url, author!!.iconUrl)
-            else if (author!!.name != null && author!!.url != null) embed.setAuthor(author!!.name, author!!.url)
-            else if (author!!.name != null) embed.setAuthor(author!!.name)
+        return EmbedBuilder().also { b ->
+            b.setTitle(title, url)
+            b.setDescription(description)
+            b.setTimestamp(timestamp?.let { Instant.parse(it) })
+            b.setColor(color ?: 536870911)
+            b.setImage(imageUrl)
+            b.setThumbnail(thumbnailUrl)
+            b.setAuthor(author?.name, author?.url, author?.iconUrl)
+            b.setFooter(footer?.text, footer?.iconUrl)
+            fieldList?.forEach {
+                b.addField(it.name, it.value, it.inline)
+            }
         }
-
-        return embed
     }
-
-    private fun EmbedBuilder.getFrom(rawEmbed: RawEmbed) : EmbedBuilder {
-
-        return this
-    }
-
 }
