@@ -67,7 +67,7 @@ override fun onMessageReceived(event: MessageReceivedEvent) {
     if (event.message.attachments.isEmpty()) return
 
     // Get all embeds from the message as a list of EmbedBuilder, then map them to a list of MessageEmbed by calling build() on each one.
-    val embeds = bot.simpleEmbed?.getEmbeds(event.message.attachments)?.map { it.build() } ?: emptyList()
+    val embeds = bot.simpleEmbed?.getMessageEmbeds(event.message.attachments) ?: emptyList()
 
     // Send the embeds to the channel the message was sent in.
     embeds.forEach { event.channel.sendMessageEmbeds(it).queue() }
