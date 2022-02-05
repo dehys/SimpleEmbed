@@ -16,7 +16,7 @@ public class JavaExample extends ListenerAdapter {
     public static SimpleEmbed simpleEmbed;
 
     public static void main(String[] args) throws LoginException {
-        JDA jda = JDABuilder.createDefault(System.getenv("SKIPBABE_TOKEN")).build();
+        JDA jda = JDABuilder.createDefault(System.getenv("BOT_TOKEN")).build();
         jda.addEventListener(new JavaExample()); // Add the listener to the JDA instance
         simpleEmbed = new SimpleEmbed(jda); // Create a new SimpleEmbed instance, optionally passing a JDA instance
     }
@@ -26,7 +26,7 @@ public class JavaExample extends ListenerAdapter {
         if (event.getAuthor().isBot() || event.getMessage().getAttachments().isEmpty()) return; // Ignore bots and messages without attachments
 
         // Get all embeds from the message as a list of EmbedBuilder, then map them to a list of MessageEmbed by calling build() on each one.
-        List<MessageEmbed> embeds = simpleEmbed.getEmbeds(event.getMessage().getAttachments()).stream().map(EmbedBuilder::build).toList();
+        List<MessageEmbed> embeds = simpleEmbed.getMessageEmbeds(event.getMessage().getAttachments());
 
         // Send the embeds to the channel the message was sent in.
         embeds.forEach(embed -> event.getChannel().sendMessageEmbeds(embed).queue());

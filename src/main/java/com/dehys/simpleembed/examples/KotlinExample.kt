@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 fun main() {
-    Bot(JDABuilder.createDefault(System.getenv("Token Here")).build())
+    Bot(JDABuilder.createDefault(System.getenv("BOT_TOKEN")).build())
 }
 
 class Bot(jda: JDA) {
@@ -25,7 +25,7 @@ class ExampleListener(private val bot: Bot) : ListenerAdapter() {
         if (event.author.isBot || event.message.attachments.isEmpty()) return // Ignore bots and messages without attachments
 
         // Get all embeds from the message as a list of EmbedBuilder, then map them to a list of MessageEmbed by calling build() on each one.
-        val embeds = bot.simpleEmbed?.getEmbeds(event.message.attachments)?.map { it.build() } ?: emptyList()
+        val embeds = bot.simpleEmbed?.getMessageEmbeds(event.message.attachments) ?: emptyList()
 
         // Send the embeds to the channel the message was sent in.
         embeds.forEach { event.channel.sendMessageEmbeds(it).queue() }
