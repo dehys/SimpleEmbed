@@ -79,34 +79,35 @@ The above example show's you how to use SimpleEmbed in Kotlin, but If you want t
 ## Json Example ##
 This is an example of a valid json file.
 ```json
- {
-   "title": "This is an example embed",
-   "description": "This is a test embed to showcase what embeds look like and how they work.",
-   "url": "https://github.com/dehys/SimpleEmbed",
-   "color": 15158332,
-   "author": {
-     "name": "Dehys",
-     "url": "https://github.com/dehys/SimpleEmbed",
-     "icon_url": "https://avatars.githubusercontent.com/u/23004445?v=4.png"
-   },
-   "fields": [
-     {
-       "name": "This is a field",
-       "value": "This is the value of the field."
-     },
-     {
-       "name": "This is another field",
-       "value": "This is the value of the field.",
-       "inline": true
-     }
-   ],
-   "image": "https://picsum.photos/200/200",
-   "thumbnail": "https://picsum.photos/200/200",
-   "footer": {
-     "text": "This is the footer text.",
-     "icon_url": "https://picsum.photos/200/200"
-   }
- }
+{
+    "title": "SimpleEmbed",
+    "url": "https://github.com/dehys/SimpleEmbed",
+    "description": "Hello there, this is an embed to test the SimpleEmbed library. If you are currently seeing this data as an 'Embed' that means that the json file containing this data was sucessfully converted to an Embed",
+    "color": 16541647,
+    "author": {
+        "name": "dehys",
+        "url": "https://github.com/dehys",
+        "icon": "https://avatars.githubusercontent.com/u/23004445?v=4.png"
+    },
+    "fields": [
+        {
+            "name": "Github",
+            "value": "[Click Here](https://github.com/dehys/SimpleEmbed)",
+            "inline": true
+        },
+        {
+            "name": "Discord",
+            "value": "[Click Here](https://discord.gg/SxwUsgk)",
+            "inline": true
+        }
+    ],
+    "image": "https://i.imgur.com/GD3Huxq.png",
+    "thumbnail": "https://avatars.githubusercontent.com/u/23004445?v=4.png",
+    "footer": {
+        "text": "Kotlin | Made with ❤️ by dehys",
+        "icon": "https://i.imgur.com/5kBrb5C.png"
+    }
+}
 ```
 <br>
 
