@@ -5,13 +5,14 @@ import com.google.gson.Gson
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import java.awt.Color
 import java.io.File
 
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
 
     private val files = mutableListOf<File>()
@@ -19,7 +20,6 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
 
     private val commandData: List<CommandData> = listOf(
         CommandData("se_embeds", "displays all embeds"),
-        CommandData("se_files", "displays all files"),
         CommandData("se_dir", "displays the working directory")
     )
 
@@ -32,8 +32,6 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
                     }
                 }
         }.absolutePath
-
-        files.forEach(::println)
 
         jda?.let {
             jda.addEventListener(this)
@@ -50,17 +48,25 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
     */
     override fun onSlashCommand(event: SlashCommandEvent) {
         when (event.name) {
-            "se_embeds" -> getEmbed("embeds.json")?.let { event.replyEmbeds(it.build()).complete() }
-            "se_files" -> getEmbed("files.json")?.let { event.replyEmbeds(it.build()).complete() }
+            "se_embeds" -> EmbedBuilder().data(getAllEmbeds()).let { event.replyEmbeds(it.build()).complete() }
             "se_dir" -> event.reply("Working directory:  `$workingDir`").complete()
         }
     }
 
-    private fun getFiles(): MutableList<File> {
-        return files
-    }
+    private fun getFile(name: String, dir: String?): File {
 
-    private fun getFile(name: String): File {
+        if (dir != null) {
+            val files = File(dir).listFiles()
+            files?.let {
+                for (file in it) {
+                    if (file.name == name) {
+                        return file
+                    }
+                }
+            }
+            return File("")
+        }
+
         for(file in files){
             if(file.name == name){
                 return file
@@ -70,6 +76,11 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
     }
 
     private fun addFile(file: File) {
+        files.forEach {
+            if (it.name == file.name) {
+                files.remove(it)
+            }
+        }
         files.add(file)
     }
 
@@ -83,12 +94,16 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
         return false
     }
 
-    private fun generateEmbed(file: File): EmbedBuilder {
-        return Gson().fromJson(file.readText(), RawEmbed::class.java).build()
+    private fun convertJsonToRawEmbed(json: String): RawEmbed? {
+        return Gson().fromJson(json, RawEmbed::class.java) ?: null
+    }
+
+    private fun convertJsonToRawEmbed(file: File): RawEmbed? {
+        return Gson().fromJson(file.readText(), RawEmbed::class.java) ?: null
     }
 
     //Get embed from Message.Attachment
-    fun getEmbed(attachment: Message.Attachment): EmbedBuilder {
+    fun getEmbedBuilder(attachment: Message.Attachment): EmbedBuilder {
         if(
             attachment.isImage ||
             attachment.isVideo ||
@@ -97,35 +112,63 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
         ) return EmbedBuilder().error("Invalid file type")
 
         val dwFile = attachment.downloadToFile(workingDir+ File.separator +attachment.fileName).get()
-        files.add(dwFile)
-        return generateEmbed(dwFile)
+        addFile(dwFile)
+        return convertJsonToRawEmbed(dwFile)?.toEmbedBuilder() ?: EmbedBuilder().error("Invalid file type")
     }
 
-    fun getEmbeds(attachments: List<Message.Attachment>): List<EmbedBuilder> {
+    fun getEmbedBuilder(name: String, dir: String?): EmbedBuilder {
+        val file = getFile(name, dir)
+        if(file.exists() && file.isFile && file.extension == "json"){
+            return convertJsonToRawEmbed(file)?.toEmbedBuilder() ?: EmbedBuilder().error("Invalid file type")
+        }
+        return EmbedBuilder().error("File not found")
+    }
+
+    fun getEmbedBuilder(file: File): EmbedBuilder {
+        if(file.exists() && file.isFile && file.extension == "json"){
+            return convertJsonToRawEmbed(file)?.toEmbedBuilder() ?: EmbedBuilder().error("Invalid file type")
+        }
+        return EmbedBuilder().error("File not found")
+    }
+
+    fun getEmbedBuilders(attachments: List<Message.Attachment>): List<EmbedBuilder> {
         val embeds = mutableListOf<EmbedBuilder>()
         attachments.forEach {
-            embeds.add(getEmbed(it))
+            embeds.add(getEmbedBuilder(it))
         }
         return embeds
     }
 
-    fun getEmbeds(message: Message): List<EmbedBuilder> {
-        return getEmbeds(message.attachments)
+    fun getEmbedBuilders(message: Message): List<EmbedBuilder> {
+        return getEmbedBuilders(message.attachments)
     }
 
-    fun getEmbed(name: String): EmbedBuilder? {
-        val file = getFile(name)
-        if(file.exists() && file.isFile && file.extension == "json"){
-            return generateEmbed(file)
-        }
-        return null
+    fun getMessageEmbed(attachment: Message.Attachment): MessageEmbed {
+        return getEmbedBuilder(attachment).build()
     }
 
-    fun getEmbed(file: File): EmbedBuilder? {
-        if(file.exists() && file.isFile && file.extension == "json"){
-            return generateEmbed(file)
+    fun getMessageEmbed(name: String, dir: String?): MessageEmbed {
+        return getEmbedBuilder(name, dir).build()
+    }
+
+    fun getMessageEmbed(file: File): MessageEmbed {
+        return getEmbedBuilder(file).build()
+    }
+
+    fun getMessageEmbeds(attachments: List<Message.Attachment>): List<MessageEmbed> {
+        val embeds = mutableListOf<MessageEmbed>()
+        attachments.forEach {
+            embeds.add(getMessageEmbed(it))
         }
-        return null
+        return embeds
+    }
+
+    fun getMessageEmbeds(message: Message): List<MessageEmbed> {
+        return getMessageEmbeds(message.attachments)
+    }
+
+    fun getRawEmbed(name: String, dir: String?): RawEmbed? {
+        return convertJsonToRawEmbed(getFile(name, dir))
     }
 
     fun deleteEmbed(name: String): Boolean {
@@ -187,4 +230,14 @@ class SimpleEmbed(jda: JDA? = null) : ListenerAdapter() {
         return this
     }
 
+    fun EmbedBuilder.data(strings: Array<String>) : EmbedBuilder {
+        val embed = this
+            .setColor(Color.CYAN)
+            .setTitle("Listing all data", "https://github.com/dehys/SimpleEmbed")
+        val desc = StringBuilder()
+        for (i in strings.indices) {
+            desc.append("``[${i + 1}] ${strings[i]}``\n")
+        }
+        return embed.setDescription(desc.toString())
+    }
 }
