@@ -1,6 +1,6 @@
 package com.dehys.simpleembed.types
 
-internal data class Field(
+data class SEField(
     var name: String? = null,
     var value: String? = null,
     var inline: Boolean = false
