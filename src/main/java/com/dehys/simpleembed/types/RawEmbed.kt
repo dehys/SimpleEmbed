@@ -2,25 +2,27 @@ package com.dehys.simpleembed.types
 
 import com.google.gson.annotations.SerializedName
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.MessageEmbed
 import java.time.Instant
 
-internal data class RawEmbed(
+@Suppress("unused")
+data class RawEmbed(
     var title: String? = null,
     var url: String? = null,
     var description: String? = null,
     var timestamp: String? = null,
     var color: Int? = null,
-    var author: Author? = null,
+    var author: SEAuthor? = null,
     @SerializedName(value = "fields", alternate = ["fieldList", "fieldArray"])
-    var fieldList: List<Field>? = null,
+    var fieldList: List<SEField>? = null,
     @SerializedName(value = "image_url", alternate = ["image", "imageUrl"])
     var imageUrl: String? = null,
     @SerializedName(value = "thumbnail_url", alternate = ["thumbnail", "thumbnailUrl"])
     var thumbnailUrl: String? = null,
-    var footer: Footer? = null
+    var footer: SEFooter? = null
 ) {
 
-    fun build() : EmbedBuilder {
+    fun toEmbedBuilder() : EmbedBuilder {
         return EmbedBuilder().also { b ->
             b.setTitle(title, url)
             b.setDescription(description)
@@ -34,5 +36,9 @@ internal data class RawEmbed(
                 b.addField(it.name, it.value, it.inline)
             }
         }
+    }
+
+    fun asMessageEmbed() : MessageEmbed {
+        return toEmbedBuilder().build()
     }
 }
